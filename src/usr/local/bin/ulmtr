@@ -1,0 +1,29 @@
+#!/bin/bash
+
+CURTIME=$(date +"%Y-%m-%d %H:%M")
+
+# Get data from top
+# and safe to file
+:> /tmp/ulmtr_top
+top -b -n 1 >> /tmp/ulmtr_top
+
+# Fill active user list
+for USER in $(getent passwd | awk -F "/^[^+]/" '{print}' | awk -F ":" '{print $1}')
+do
+	TUSER=$(grep "$USER" /tmp/ulmtr_users)
+	if [ -z "$TUSER" ];
+    then
+		echo $USER NOT found in /tmp/ulmtr_users
+		echo $USER >> /tmp/ulmtr_users
+	fi
+done
+
+for USER in $(getent passwd | awk -F "/^[^+]/" '{print}' | awk -F ":" '{print $1}')
+do
+	CPU=$(awk -v user=$USER '/'"$USER"'/ {print}' /tmp/ulmtr_top | awk '{ sum += $9; } END { print sum; }' | sed 's/\./,/g')
+	MEM=$(awk -v user=$USER '/'"$USER"'/ {print}' /tmp/ulmtr_top | awk '{ sum += $10; } END { print sum; }' | sed 's/\./,/g')
+	if [ -n "$CPU" ] || [ -n "$MEM" ];
+	then
+		echo $CURTIME";"$USER";"$CPU";"$MEM >> /var/log/ulmtr
+	fi
+done
