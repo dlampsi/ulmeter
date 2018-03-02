@@ -1,12 +1,19 @@
 #!/bin/bash
 
-STAT_USR_DIR="/opt/load_meter/stat"
-STAT_USR="/var/log/user_load"
+RESULT_FOLDER="/var/log/user-load-meter/stat"
+STAT_USR="/var/log/user-load-meter/ulmtr"
+USERS_LIST="/tmp/ulmtr_users"
 CURTIME=$(date +"%Y-%m-%d")
 
-cd $STAT_USR_DIR
+# Creater result folder
+if [ ! -d "$RESULT_FOLDER" ];
+	then
+	mkdir $RESULT_FOLDER
+fi
 
-# Создаём директорию с датой
+cd $RESULT_FOLDER
+
+# Create directory with current date
 x=$(find . -type d -name "$CURTIME")
 if [ "$x" = "" ]
 then
@@ -14,27 +21,25 @@ then
 	mkdir $CURTIME/per_user
 fi
 
-for USER in $(awk '{print}' /tmp/users_list)
+for USER in $(awk '{print}' $USERS_LIST)
 do
-	# СВОДНАЯ СТАТИСТИКА
-
-	# CPU и память
+	# CPU and MEM
 	CPU=$(awk -v USER=$USER '/'"$USER"'/ {print}' $STAT_USR | awk -F ";" -v USER=$USER '{ sum += $3; } END { print sum; }' | sed 's/\./,/g')
 	MEM=$(awk -v USER=$USER '/'"$USER"'/ {print}' $STAT_USR | awk -F ";" -v USER=$USER '{ sum += $4; } END { print sum; }'| sed 's/\./,/g')
-	# Кол-во снятых метрик
+	# Metrics count
 	COUNT=$(awk -v USER=$USER '/'"$USER"'/ {print}' $STAT_USR | awk -v USER=$USER 'END {if (NR>0) print NR}')
 	#a=$(expr "$CPU"/"$COUNT")
 	if [ -n "$CPU" ] || [ -n "$MEM" ];
 	then
-		echo $USER";"$CPU";"$MEM";"$COUNT >> $STAT_USR_DIR/$CURTIME/total_load
+		echo $USER";"$CPU";"$MEM";"$COUNT >> $RESULT_FOLDER/$CURTIME/total_load
 	fi
 
 	# ПО ПОЛЬЗОВАТЕЛЯМ
 
-	awk -v USER=$USER '/'"$USER"'/ {print}' $STAT_USR | awk '{if (NR > 0) print}' >> $STAT_USR_DIR/$CURTIME/per_user/$USER
+	awk -v USER=$USER '/'"$USER"'/ {print}' $STAT_USR | awk '{if (NR > 0) print}' >> $RESULT_FOLDER/$CURTIME/per_user/$USER
 
 done
 
 # Копируем файл статистики и очищаем его
-cp $STAT_USR $STAT_USR_DIR/$CURTIME
+cp $STAT_USR $RESULT_FOLDER/$CURTIME
 :> $STAT_USR

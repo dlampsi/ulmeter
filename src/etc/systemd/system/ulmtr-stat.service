@@ -1,0 +1,5 @@
+[Unit]
+Description = Stat total users load on host
+
+[Service]
+ExecStart=/usr/local/bin/ulmtr-stat

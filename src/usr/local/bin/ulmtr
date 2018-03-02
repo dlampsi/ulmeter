@@ -1,29 +1,39 @@
 #!/bin/bash
 
+TEMP_FILE="/tmp/ulmtr_top"
+RESULT_FOLDER="/var/log/user-load-meter"
+USERS_LIST="/tmp/ulmtr_users"
 CURTIME=$(date +"%Y-%m-%d %H:%M")
 
 # Get data from top
-# and safe to file
-:> /tmp/ulmtr_top
-top -b -n 1 >> /tmp/ulmtr_top
+# and safe to temp file
+:> $TEMP_FILE
+top -b -n 1 >> $TEMP_FILE
 
-# Fill active user list
+# Creater result folder
+if [ ! -d "$RESULT_FOLDER" ];
+	then
+	mkdir $RESULT_FOLDER
+fi
+
+# Filling active user list
 for USER in $(getent passwd | awk -F "/^[^+]/" '{print}' | awk -F ":" '{print $1}')
 do
-	TUSER=$(grep "$USER" /tmp/ulmtr_users)
+	TUSER=$(grep "$USER" $USERS_LIST)
 	if [ -z "$TUSER" ];
     then
-		echo $USER NOT found in /tmp/ulmtr_users
-		echo $USER >> /tmp/ulmtr_users
+		echo $USER NOT found in $USERS_LIST
+		echo $USER >> $USERS_LIST
 	fi
 done
 
+# Filling result file 'ulmtr'
 for USER in $(getent passwd | awk -F "/^[^+]/" '{print}' | awk -F ":" '{print $1}')
 do
-	CPU=$(awk -v user=$USER '/'"$USER"'/ {print}' /tmp/ulmtr_top | awk '{ sum += $9; } END { print sum; }' | sed 's/\./,/g')
+	CPU=$(awk -v user=$USER '/'"$USER"'/ {print}' /tmp/ulmtr_top| awk '{ sum += $9; } END { print sum; }' | sed 's/\./,/g')
 	MEM=$(awk -v user=$USER '/'"$USER"'/ {print}' /tmp/ulmtr_top | awk '{ sum += $10; } END { print sum; }' | sed 's/\./,/g')
 	if [ -n "$CPU" ] || [ -n "$MEM" ];
 	then
-		echo $CURTIME";"$USER";"$CPU";"$MEM >> /var/log/ulmtr
+		echo $CURTIME";"$USER";"$CPU";"$MEM >> $RESULT_FOLDER/ulmtr
 	fi
 done
