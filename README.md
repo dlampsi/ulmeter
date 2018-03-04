@@ -25,8 +25,14 @@ Verify that folder /var/log/user-load-meter contain data
 
 Data processing
 ---------------
-Utility contain two script `ulmeter` and `ulmeter-stat`.
+Utility contain two script `ulmeter` and `ulmeter-stat`. 
 
 `ulmeter` get load data and writing it in `/var/log/user-load-meter/ultmr` log file. It run every 5 minutes.
 
 `ulmeter-stat` get on input data from `/var/log/user-load-meter/ultmr` file and calculate total load per user. It safe result data in `/var/log/user-load-meter/stat` folder. It run every day.
+
+Scripts running through systemd. You can stop (and start) them via commands:
+```shell
+systemctl stop ulmeter.timer
+systemctl stop ulmeter-stat.timer
+```
