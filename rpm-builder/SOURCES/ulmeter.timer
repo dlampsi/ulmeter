@@ -1,10 +1,10 @@
 [Unit]
-Description=Timer for ulmtr service
+Description=Timer for ulmeter service
 
 [Timer]
 OnUnitActiveSec=60s
 OnBootSec=10s
-Unit=ulmtr.service
+Unit=ulmeter.service
 
 [Install]
 WantedBy=multi-user.target

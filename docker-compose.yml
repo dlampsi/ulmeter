@@ -1,0 +1,7 @@
+version: '2'
+services:
+    rpmbuilder:
+        build: ./rpm-builder
+        volumes:
+            - ./RPMS:/root/rpmbuild/RPMS/x86_64
+            - ./log:/var/log

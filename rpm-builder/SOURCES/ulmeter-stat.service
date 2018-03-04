@@ -2,4 +2,4 @@
 Description = Stat total users load on host
 
 [Service]
-ExecStart=/usr/local/bin/ulmtr-stat
+ExecStart=/usr/local/bin/ulmeter-stat

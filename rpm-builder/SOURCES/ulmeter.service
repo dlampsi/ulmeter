@@ -2,4 +2,4 @@
 Description = Get users load on host
 
 [Service]
-ExecStart=/usr/local/bin/ulmtr
+ExecStart=/usr/local/bin/ulmeter
